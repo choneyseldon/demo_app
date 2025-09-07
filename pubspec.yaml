@@ -42,8 +42,7 @@ dependencies:
   shared_preferences: ^2.5.3
   google_fonts: ^6.3.1
   smooth_page_indicator: ^1.2.1
-
-
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +71,9 @@ flutter:
   - assets/images/1.png
   - assets/images/2.png
   - assets/images/3.png
+  - assets/icons/google.svg
+  - assets/icons/facebook.svg
+  
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

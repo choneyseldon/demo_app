@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import 'home_screen.dart';
+import 'signin_screen.dart';
+
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -20,7 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await prefs.setBool('seen_onboarding', true);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const SignInScreen()), // Changed to SignInScreen
     );
   }
 
@@ -47,12 +48,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           const SizedBox(height: 80), // Space from top
           
-          // Image
-          Image.asset(
-            imagePath,
-            width: 400,
-            height: 400,
-            fit: BoxFit.contain,
+          // Image placeholder (using Icon since assets might not exist)
+          Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 66, 63, 248).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              Icons.business,
+              size: 150,
+              color: Color.fromARGB(255, 66, 63, 248),
+            ),
           ),
           
           const SizedBox(height: 40),
