@@ -53,13 +53,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             width: 300,
             height: 300,
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 66, 63, 248).withOpacity(0.1),
+              color: const Color.fromARGB(255, 253, 253, 253).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(
-              Icons.business,
-              size: 150,
-              color: Color.fromARGB(255, 66, 63, 248),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.business,
+                  size: 150,
+                  color: Color.fromARGB(255, 255, 255, 255),
+                ),
+              ),
             ),
           ),
           
