@@ -1,10 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
-  static final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  static final GoogleSignIn _googleSignIn = kIsWeb
+      ? GoogleSignIn(
+          scopes: [
+            'email',
+            'profile',
+          ],
+          clientId: '8842383345-sjauiebtr0i3hkmjt2kgb12159fa2ta6.apps.googleusercontent.com',
+        )
+      : GoogleSignIn(
+          scopes: [
+            'email',
+            'profile',
+          ],
+          serverClientId: '8842383345-gv0dcjq6stth6vgn8msq01p3r97vkorg.apps.googleusercontent.com',
+        );
 
   // Get current user
   static User? getCurrentUser() {
@@ -64,16 +80,26 @@ class AuthService {
   // Sign in with Google
   static Future<UserCredential?> signInWithGoogle() async {
     try {
+      // Sign out from previous Google account first
+      await _googleSignIn.signOut();
+      
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       
       if (googleUser == null) {
         // User canceled the sign-in
-        return null;
+        throw Exception('Google sign in was cancelled');
       }
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      print('accessToken: ${googleAuth.accessToken}');
+      print('idToken: ${googleAuth.idToken}');
+
+      // Check if we got the tokens
+      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
+        throw Exception('Failed to get Google authentication tokens');
+      }
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
@@ -88,6 +114,8 @@ class AuthService {
       await _saveLoginState(true);
 
       return result;
+    } on FirebaseAuthException catch (e) {
+      throw _getAuthException(e);
     } catch (e) {
       throw Exception('Google sign in failed: ${e.toString()}');
     }
@@ -140,6 +168,12 @@ class AuthService {
         return 'Too many failed attempts. Please try again later.';
       case 'operation-not-allowed':
         return 'This sign-in method is not allowed.';
+      case 'account-exists-with-different-credential':
+        return 'An account already exists with the same email but different sign-in credentials.';
+      case 'invalid-credential':
+        return 'The credential is invalid or has expired.';
+      case 'user-cancelled':
+        return 'Sign in was cancelled.';
       default:
         return e.message ?? 'An error occurred during authentication.';
     }
