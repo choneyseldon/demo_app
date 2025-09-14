@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'components.dart';
 import 'home_screen.dart';
+import 'auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -87,29 +88,67 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isLoading = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        await AuthService.signUpWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          fullName: _fullNameController.text.trim(),
+        );
 
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
-  void _signUpWithGoogle() {
-    // Implement Google sign up
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Google sign up not implemented yet')),
-    );
+  Future<void> _signUpWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await AuthService.signInWithGoogle();
+      
+      if (result != null && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _signUpWithFacebook() {
-    // Implement Facebook sign up
+    // Facebook sign up not implemented in this example
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Facebook sign up not implemented yet')),
     );
@@ -155,15 +194,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
-                  const Text(
-                    '',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
                   const SizedBox(height: 40),
                   
                   // Welcome Home Title
@@ -178,7 +208,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: 8),
                   
                   const Text(
-                    'Sign in to access your listings and find your perfect place to settle.',
+                    'Sign up to access your listings and find your perfect place to settle.',
                     style: TextStyle(
                       fontSize: 14,
                       color: Color(0xFF666666),

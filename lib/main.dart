@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
+import 'auth_service.dart';
 import 'introduction_screen.dart';
+import 'signin_screen.dart';
+import 'home_screen.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  WidgetsFlutterBinding.ensureInitialized();
-
   // Check if user has seen onboarding before
   final prefs = await SharedPreferences.getInstance();
   final seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
-  final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+  
+  // Check authentication state
+  final isLoggedIn = AuthService.isSignedIn();
 
   runApp(MyApp(
     seenOnboarding: seenOnboarding,
@@ -47,8 +51,22 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      // Always show onboarding first
-      home: const OnboardingScreen(),
+      home: _getInitialScreen(),
     );
+  }
+
+  Widget _getInitialScreen() {
+    // If user is logged in, go to home
+    if (isLoggedIn) {
+      return const HomeScreen();
+    }
+    
+    // If user hasn't seen onboarding, show it
+    if (!seenOnboarding) {
+      return const OnboardingScreen();
+    }
+    
+    // Otherwise show sign in
+    return const SignInScreen();
   }
 }
